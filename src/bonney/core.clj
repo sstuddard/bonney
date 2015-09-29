@@ -81,10 +81,10 @@
   "Creates a new scheduler pool. All jobs scheduled within this pool will
    share an executor and be constrained by the number of threads in that
    executor. Default worker thread count is 1."
-  [& {:keys [threads description] :or {threads 1 description ""}}]
+  [& {:keys [threads desc] :or {threads 1 desc""}}]
   (agent (->SchedulePool (java.util.concurrent.Executors/newScheduledThreadPool threads)
                          {}
-                         description
+                         desc
                          (atom 0))))
 
 (defn- create-token [pool] (Object.))
@@ -104,7 +104,7 @@
     (try
       (f)
       (catch InterruptedException e nil)
-      (catch Exception e (error-f e)))))
+      (catch Exception e (try (error-f e) catch Exception e nil)))))
 
 (defn every
   "Calls the specified function every interval milliseconds. An :error-fn can be
