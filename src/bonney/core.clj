@@ -77,6 +77,15 @@
         (.shutdown executor))
     pool))
 
+(defn- get-job-by-id
+  "Returns jobs by their ID in a pool."
+  [pool id]
+  (->> @pool 
+       :jobs 
+       vals 
+       (filter #(= id (:id %))) 
+       first))
+
 (defn create-pool
   "Creates a new scheduler pool. All jobs scheduled within this pool will
    share an executor and be constrained by the number of threads in that
@@ -104,7 +113,7 @@
     (try
       (f)
       (catch InterruptedException e nil)
-      (catch Exception e (try (error-f e) catch Exception e nil)))))
+      (catch Exception e (error-f e)))))
 
 (defn every
   "Calls the specified function every interval milliseconds. An :error-fn can be
@@ -141,8 +150,8 @@
   (let [job-token (create-token pool)
         delay (- time (System/currentTimeMillis))
         final-fn (->> f 
-                      (wrap-cleaner-fn pool job-token) 
-                      (wrap-error-fn (or error-fn identity)))]
+                      (wrap-error-fn (or error-fn identity))
+                      (wrap-cleaner-fn pool job-token))]
     (send pool add-job job-token final-fn 0 delay false desc)
     { :pool pool :token job-token }))
 
@@ -155,20 +164,26 @@
   [delay f pool & {:keys [error-fn desc] :or {desc""}}]
   (let [job-token (create-token pool)
         final-fn (->> f 
-                      (wrap-cleaner-fn pool job-token) 
-                      (wrap-error-fn (or error-fn identity)))]
+                      (wrap-error-fn (or error-fn identity))
+                      (wrap-cleaner-fn pool job-token))]
     (send pool add-job job-token final-fn 0 delay false desc)
     { :pool pool :token job-token }))
 
 (defn stop
   "Stops a job peacefully."
-  [job]
-  (send (:pool job) stop-job (:token job) false))
+  ([job]
+    (send (:pool job) stop-job (:token job) false))
+  ([id pool]
+    (when-let [token (:token (get-job-by-id pool id))]
+      (send pool stop-job token false))))
 
 (defn kill
   "Stops a job aggressively by interrupting it if it's running."
-  [job]
-  (send (:pool job) stop-job (:token job) true))
+  ([job]
+    (send (:pool job) stop-job (:token job) true))
+  ([id pool]
+    (when-let [token (:token (get-job-by-id pool id))]
+      (send pool stop-job token true))))
 
 (defn shutdown
   "Shuts down a pool which will cancel/terminate all jobs and

@@ -4,6 +4,8 @@ Bonney is a simple scheduler for Clojure that closely mimics the [overtone/at-at
 
 There are two primary differences. Bonney aims to cleanly and completely shutdown when asked, and to provide error handling support. With Java executors, a task throwing an exception fails silently and makes the executor unusable.
 
+Why Bonney? William Bonney was a regulator.
+
 ## General
 
 A pool maps to an individual executor and group of jobs. When creating a pool you may specify the number of workers, the default is 1. Jobs are created per pool and killed per pool. You should always close all pools when exiting your program.
