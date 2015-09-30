@@ -1,10 +1,10 @@
 # Bonney
 
+William H. Bonney, a Lincoln County *Regulator*
+
 Bonney is a simple scheduler for Clojure that closely mimics the [overtone/at-at](https://github.com/overtone/at-at) interface. The only significant difference is shutdown. 
 
 There are two primary differences. Bonney aims to cleanly and completely shutdown when asked, and to provide error handling support. With Java executors, a task throwing an exception fails silently and makes the executor unusable.
-
-Why Bonney? William Bonney was a regulator.
 
 ## General
 
@@ -12,15 +12,14 @@ A pool maps to an individual executor and group of jobs. When creating a pool yo
 
 There are two ways to stop jobs, aggressively and not aggressively. If a job is stopped, it will complete running if it is already running. If a job is killed, it will be interrupted if it is running already.
 
-## Installation
+## Installation and Usage
 
-I should upload this to clojars...
-
-## Usage
+From Clojars, put in your project.clj:
+```clojure
+[bonney "0.1."]
+```
 
 ```clojure
-[bonney "0.1.0"]
-
 ;; In your ns statement:
 (:require [bonney.core :refer :all])
 ```
